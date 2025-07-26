@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/usuario")
 @RequiredArgsConstructor
 @Tag(name = "Usuário", description = "Cadastro e login de usuários")
+@CrossOrigin(origins = {"http://localhost:3000"})
 @SecurityRequirement(name = SecurityConfig.SECURITY_SCHEME)
 public class UsuarioController {
 
