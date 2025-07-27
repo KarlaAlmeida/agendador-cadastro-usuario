@@ -9,11 +9,18 @@ import com.javanauta.agendador_tarefas_usuario.infraestructure.entity.Telefone;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.entity.Usuario;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.exceptions.ConflictExceptions;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.exceptions.ResourceNotFoundException;
+import com.javanauta.agendador_tarefas_usuario.infraestructure.exceptions.UnauthorazedException;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.repository.EnderecoRepository;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.repository.TelefoneRepository;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.repository.UsuarioRepository;
 import com.javanauta.agendador_tarefas_usuario.infraestructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +29,14 @@ import org.springframework.stereotype.Service;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final UsuarioConverter usuarioConverter;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     private final EnderecoRepository enderecoRepository;
     private final TelefoneRepository telefoneRepository;
+
+    private final UsuarioConverter usuarioConverter;
+
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     public UsuarioDTO salvaUsuario(UsuarioDTO usuarioDTO){
         try{
@@ -37,6 +47,17 @@ public class UsuarioService {
             return usuarioConverter.paraUsuarioDTO(usuario);
         } catch (ConflictExceptions e){
             throw new ConflictExceptions("Email já cadastrado" + e.getCause());
+        }
+    }
+
+    public String autenticarUsuario(UsuarioDTO usuarioDTO) throws UnauthorazedException {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(usuarioDTO.getEmail(),
+                            usuarioDTO.getSenha()));
+            return "Bearer " + jwtUtil.generateToken(authentication.getName());
+        }catch (BadCredentialsException | UsernameNotFoundException | AuthorizationDeniedException e){
+            throw new UnauthorazedException("Usuário ou senha inválidos: ", e.getCause());
         }
     }
 
