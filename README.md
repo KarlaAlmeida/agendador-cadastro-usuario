@@ -48,6 +48,7 @@ API responsável pelo cadastro, autenticação e gerenciamento de usuários de u
 
 - DTOs e validações com Bean Validation
 - Padrão de desenvolvimento em camadas: Controller, Business (Service, Converters, DTOs), Infra (Entities, Repositories, Security, Interfaces FeignClient, Exceptions)
+- Padrão de projeto com Builder Converter para converter objetos Entity de objetos DTO
 - Tratamento global de exceções
 - Uso de Swagger para testes e documentação da API
 
